@@ -5,11 +5,11 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char *font = "Maple Mono:pixelsize=20:antialias=true:autohint=true";
+static char *font = "Firacode Nerd Font:pixelsize=19:antialias=true:autohint=true";
 static char *font2[] = {
-    "Firacode Nerd Font :pixelsize=20:antialias=true:autohint=true",
-    "思源黑体 CN:pixelsize=20:antialias=true:autohint=true",
-    "NotoColorEmoji:size=12:antialias=true:autohint=true",
+    "Iosevka Nerd Font:pixelsize=18:antialias=true:autohint=true",
+    "思源黑体 CN:pixelsize=19:antialias=true:autohint=true",
+    "icons-in-terminal:pixelsize=13:antialias=true:autohint=true",
 };
 static int borderpx = 2;
 
@@ -98,7 +98,7 @@ const int boxdraw_braille = 1;
 static int bellvolume = 0;
 
 /* default TERM value */
-char *termname = "st-256color";
+char *termname = "st";
 
 /*
  * spaces per tab
@@ -118,43 +118,45 @@ char *termname = "st-256color";
 unsigned int tabspaces = 8;
 
 /* bg opacity */
-float alpha = 1;
+float alpha = 0.9;
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
-  "#282828", /* hard contrast: #1d2021 / soft contrast: #32302f */
-  "#cc241d",
-  "#98971a",
-  "#d79921",
-  "#458588",
-  "#b16286",
-  "#689d6a",
-  "#a89984",
-  "#928374",
-  "#fb4934",
-  "#b8bb26",
-  "#fabd2f",
-  "#83a598",
-  "#d3869b",
-  "#8ec07c",
-  "#ebdbb2",
-  [255] = 0,
-  /* more colors can be added after 255 to use with DefaultXX */
-  "#add8e6", /* 256 -> cursor */
-  "#555555", /* 257 -> rev cursor*/
-  "#282828", /* 258 -> bg */
-  "#ffffff", /* 259 -> fg */
-};
+    /* 8 normal colors */
+    [0] = "#3B4252", /* black   */
+    [1] = "#BF616A", /* red     */
+    [2] = "#A3BE8C", /* green   */
+    [3] = "#EBCB8B", /* yellow  */
+    [4] = "#81A1C1", /* blue    */
+    [5] = "#b16286", /* magenta */
+    [6] = "#689d6a", /* cyan    */
+    [7] = "#ECEFF4", /* white   */
 
+    /* 8 bright colors */
+    [8]  = "#4C566A", /* black   */
+    [9]  = "#BF616A", /* red     */
+    [10] = "#A3BE8C", /* green   */
+    [11] = "#EBCB8B", /* yellow  */
+    [12] = "#81A1C1", /* blue    */
+    [13] = "#d3869b", /* magenta */
+    [14] = "#8ec07c", /* cyan    */
+    [15] = "#ECEFF4", /* white   */
+
+    /* special colors */
+    [256] = "#282828", /* background */
+    [257] = "#ebdbb2", /* foreground */
+    [258] = "#928374", /* selection background */
+    [259] = "#ebdbb2", /* selection foreground */
+};
 
 /*
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
-unsigned int defaultfg = 259;
-unsigned int defaultbg = 258;
-unsigned int defaultcs = 256;
-unsigned int defaultrcs = 257;
+unsigned int defaultfg = 257;
+unsigned int defaultbg = 256;
+unsigned int defaultcs = 257;
+unsigned int defaultrcs = 256;
 
 /*
  * https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h4-Functions-using-CSI-_-ordered-by-the-final-character-lparen-s-rparen:CSI-Ps-SP-q.1D81
@@ -213,9 +215,9 @@ ResourcePref resources[] = {
   { "color13",      STRING,  &colorname[13] },
   { "color14",      STRING,  &colorname[14] },
   { "color15",      STRING,  &colorname[15] },
-  { "background",   STRING,  &colorname[258] },
-  { "foreground",   STRING,  &colorname[259] },
-  { "cursorColor",  STRING,  &colorname[256] },
+  { "background",   STRING,  &colorname[256] },
+  { "foreground",   STRING,  &colorname[257] },
+  { "cursorColor",  STRING,  &colorname[257] },
   { "termname",     STRING,  &termname },
   { "shell",        STRING,  &shell },
   { "blinktimeout", INTEGER, &blinktimeout },
@@ -251,14 +253,6 @@ MouseKey mkeys[] = {
   { Button5,              Mod4Mask,        zoom,           {.f =  -1} },
 };
 
-static char *openurlcmd[] = { "/bin/sh", "-c", "st-urlhandler", "externalpipe", NULL };
-
-static char *copyurlcmd[] = { "/bin/sh", "-c",
-  "tmp=$(sed 's/.*│//g' | tr -d '\n' | grep -aEo '(((http|https|gopher|gemini|ftp|ftps|git)://|www\\.)[a-zA-Z0-9.]*[:]?[a-zA-Z0-9./@$&%?$#=_-~]*)|((magnet:\\?xt=urn:btih:)[a-zA-Z0-9]*)' | uniq | sed 's/^www./http:\\/\\/www\\./g' ); IFS=; [ ! -z $tmp ] && echo $tmp | dmenu -i -p 'Copy which url?' -l 10 | tr -d '\n' | xclip -selection clipboard",
-  "externalpipe", NULL };
-
-static char *copyoutput[] = { "/bin/sh", "-c", "st-copyout", "externalpipe", NULL };
-
 static Shortcut shortcuts[] = {
   /* mask                     keysym          function        argument */
   { XK_ANY_MOD,               XK_Break,       sendbreak,      {.i =  0} },
@@ -269,34 +263,12 @@ static Shortcut shortcuts[] = {
   { MODKEY,                   XK_period,      zoom,           {.f = -1} },
   { MODKEY,                   XK_g,           zoomreset,      {.f =  0} },
   { ControlMask | ShiftMask,  XK_C,           clipcopy,       {.i =  0} },
-  { ShiftMask,                XK_Insert,      clippaste,      {.i =  0} },
   { ControlMask | ShiftMask,  XK_V,           clippaste,      {.i =  0} },
   { XK_ANY_MOD,               Button2,        selpaste,       {.i =  0} },
   { MODKEY,                   XK_Num_Lock,    numlock,        {.i =  0} },
   { ControlMask | ShiftMask,  XK_U,           iso14755,       {.i =  0} },
   { ShiftMask,                XK_Page_Up,     kscrollup,      {.i = -1} },
   { ShiftMask,                XK_Page_Down,   kscrolldown,    {.i = -1} },
-  { MODKEY,                   XK_Page_Up,     kscrollup,      {.i = -1} },
-  { MODKEY,                   XK_Page_Down,   kscrolldown,    {.i = -1} },
-  { MODKEY,                   XK_k,           kscrollup,      {.i =  1} },
-  { MODKEY,                   XK_j,           kscrolldown,    {.i =  1} },
-  { MODKEY,                   XK_Up,          kscrollup,      {.i =  1} },
-  { MODKEY,                   XK_Down,        kscrolldown,    {.i =  1} },
-  { MODKEY,                   XK_u,           kscrollup,      {.i = -1} },
-  { MODKEY,                   XK_d,           kscrolldown,    {.i = -1} },
-  { MODKEY,                   XK_s,           changealpha,    {.f = -0.05} },
-  { MODKEY,                   XK_a,           changealpha,    {.f = +0.05} },
-  { MODKEY,                   XK_m,           changealpha,    {.f = +2.00} },
-  { TERMMOD,                  XK_Up,          zoom,           {.f = +1} },
-  { TERMMOD,                  XK_Down,        zoom,           {.f = -1} },
-  { TERMMOD,                  XK_K,           zoom,           {.f = +1} },
-  { TERMMOD,                  XK_J,           zoom,           {.f = -1} },
-  { TERMMOD,                  XK_U,           zoom,           {.f = +2} },
-  { TERMMOD,                  XK_D,           zoom,           {.f = -2} },
-  { MODKEY,                   XK_l,           externalpipe,   {.v = openurlcmd } },
-  { MODKEY,                   XK_y,           externalpipe,   {.v = copyurlcmd } },
-  { MODKEY,                   XK_o,           externalpipe,   {.v = copyoutput } },
-  { TERMMOD,                  XK_Return,      newterm,        {.i =  0} },
 
 };
 
